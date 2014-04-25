@@ -132,7 +132,7 @@ class BufferWalker:
             diag = DefaultDiagnostics()
         self.source = diag.wrap(iter(source))
         try:
-            self.buffer = [self.source.__next__()]
+            self.buffer = [next(self.source)]
         except StopIteration:
             self.buffer = []
         self.index = 0
@@ -149,12 +149,12 @@ class BufferWalker:
         """fills the internal buffer from the source iterator"""
         try:
             for i in range(size):
-                self.buffer.append(self.source.__next__())
+                self.buffer.append(next(self.source))
         except StopIteration:
             self.buffer.append((EndOfFile, EndOfFile))
         self.len = len(self.buffer)
     
-    def next(self):
+    def __next__(self):
         """Advances to and returns the next token or returns EndOfFile"""
         self.index += 1
         t = self.peek()
@@ -265,7 +265,7 @@ def p(name, parser, *args1, **kwargs1):
             raise
     return p_desc
 
-next = lambda: local_ps.value.next()
+next_token = lambda: next(local_ps.value)
 peek = lambda: local_ps.value.peek()
 fail = lambda expecting=[]: local_ps.value.fail(expecting)
 commit = lambda: local_ps.value.commit()
@@ -321,7 +321,7 @@ def any_token():
     ch = peek()
     if ch is EndOfFile:
         fail(["not eof"])
-    next()
+    next_token()
     return ch
 
 def one_of(these):
@@ -336,7 +336,7 @@ def one_of(these):
     except TypeError:
         if ch != these:
             fail([these])
-    next()
+    next_token()
     return ch
 
 def not_one_of(these):
@@ -352,7 +352,7 @@ def not_one_of(these):
     except TypeError:
         if ch != these:
             fail([desc])
-    next()
+    next_token()
     return ch
 
 def _fun_to_str(f):
@@ -373,7 +373,7 @@ def satisfies(guard):
     i = peek()
     if (i is EndOfFile) or (not guard(i)):
         fail(["<satisfies predicate " + _fun_to_str(guard) + ">"])
-    next()
+    next_token()
     return i
 
 def optional(parser, default=None):
@@ -500,7 +500,7 @@ def remaining():
     tokens = []
     while peek() is not EndOfFile:
         tokens.append(peek())
-        next()
+        next_token()
     return tokens
 
 def seq(*sequence):

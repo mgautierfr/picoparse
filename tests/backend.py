@@ -56,9 +56,9 @@ class TestDefaultDiagnostics(unittest.TestCase):
              self.assertEqual(self.diag.tokens, list(zip(range(1, a+1),range(1, a+1))))
     
     def test_cut(self):
-        self.i.__next__()
-        self.i.__next__()
-        c, p = self.i.__next__()
+        next(self.i)
+        next(self.i)
+        c, p = next(self.i)
         self.diag.cut(p)
         self.assertEqual(self.diag.tokens, [(3,3)])
 
@@ -72,34 +72,34 @@ class TestBufferWalker(unittest.TestCase):
 
     def test_next(self):
         for c in self.input[1:]:
-            self.assertEqual(self.bw.next(), c)
+            self.assertEqual(next(self.bw), c)
     
     def test_peek(self):
         for c in self.input:
             self.assertEqual(self.bw.peek(), c)
-            self.bw.next()
+            next(self.bw)
     
     def test_current(self):
         for c, pos in zip(self.input, count(1)):
             self.assertEqual(self.bw.current(), (c, pos))
-            self.bw.next()
+            next(self.bw)
     
     def test_pos(self):
         for c, pos in zip(self.input, count(1)):
             self.assertEqual(self.bw.pos(), pos)
-            self.bw.next()
+            next(self.bw)
     
     def test_fail(self):
         self.assertRaises(NoMatch, self.bw.fail)
         self.assertEqual(self.bw.peek(), 'a')
     
     def test_tri_accept(self):
-        self.bw.tri(self.bw.next)
+        self.bw.tri(self.bw.__next__)
         self.assertEqual(self.bw.peek(), 'b')
     
     def test_tri_fail(self):
         def fun():
-            self.bw.next()
+            next(self.bw)
             self.bw.fail()
         self.assertRaises(NoMatch, p(self.bw.tri, fun))
 
@@ -112,14 +112,14 @@ class TestBufferWalker(unittest.TestCase):
 
     def test_commit_accept(self):
         def fun():
-            self.bw.next()
+            next(self.bw)
             self.bw.commit()
         self.bw.tri(fun)
         self.assertEqual(self.bw.peek(), 'b')
     
     def test_commit_fail(self):
         def fun():
-            self.bw.next()
+            next(self.bw)
             self.bw.commit()
             self.bw.fail()
         self.assertRaises(NoMatch, p(self.bw.tri, fun))
@@ -129,9 +129,9 @@ class TestBufferWalker(unittest.TestCase):
         self.bw.choice()
     
     def test_choice_accept(self):
-        self.bw.choice(self.bw.fail, self.bw.next)
-        self.bw.choice(self.bw.next, self.bw.fail)
-        self.bw.choice(self.bw.next, self.bw.next)
+        self.bw.choice(self.bw.fail, self.bw.__next__)
+        self.bw.choice(self.bw.__next__, self.bw.fail)
+        self.bw.choice(self.bw.__next__, self.bw.__next__)
         self.assertEqual(self.bw.peek(), 'd')
     
     def test_choice_fail(self):
@@ -139,7 +139,7 @@ class TestBufferWalker(unittest.TestCase):
     
     def test_choice_commit_fail(self):
         def fun():
-            self.bw.next()
+            next(self.bw)
             self.bw.commit()
             self.bw.fail()
         self.assertRaises(NoMatch, p(self.bw.choice, fun))

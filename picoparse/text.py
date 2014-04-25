@@ -126,7 +126,7 @@ class TextDiagnostics:
     def wrap(self, stream):
         try:
             while True:
-                ch = stream.__next__()
+                ch = next(stream)
                 self.line.append(ch)
                 if ch == '\n':
                     for tok in self.emit_line():
