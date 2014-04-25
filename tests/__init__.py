@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2009, Andrew Brehaut, Steven Ashley
 # All rights reserved.
 # 
@@ -23,9 +23,9 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
 
-from backend import *
-from core_parsers import *
-from text_parsers import *
+from .backend import *
+from .core_parsers import *
+from .text_parsers import *
 import unittest
 
 if __name__ == '__main__':

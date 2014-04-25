@@ -88,7 +88,7 @@ def caseless_literal(s):
     return make_caseless_literal(s)()
 
 
-class Pos(object):
+class Pos:
     def __init__(self, row, col):
         self.row = row
         self.col = col
@@ -97,7 +97,7 @@ class Pos(object):
         return str(self.row) + ":" + str(self.col)
 
 
-class TextDiagnostics(object):
+class TextDiagnostics:
     def __init__(self):
         self.lines = []
         self.row = 1
@@ -126,7 +126,7 @@ class TextDiagnostics(object):
     def wrap(self, stream):
         try:
             while True:
-                ch = stream.next()
+                ch = stream.__next__()
                 self.line.append(ch)
                 if ch == '\n':
                     for tok in self.emit_line():

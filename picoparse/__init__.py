@@ -40,7 +40,8 @@ except ImportError:
         args = args[1:]
         return lambda *args2,**kw2: fn(*(args+args2),**__merged(kw,kw2))
 
-from itertools import izip, count
+from functools import reduce
+from itertools import count
 from operator import add
 import threading
 
@@ -76,7 +77,7 @@ class NoMatch(Exception):
 FailedAfterCutting = "FailedAfterCutting"
 
 
-class DefaultDiagnostics(object):
+class DefaultDiagnostics:
     def __init__(self):
         self.tokens = []
         self.offset = 1
@@ -93,21 +94,22 @@ class DefaultDiagnostics(object):
         self.offset += to_cut
     
     def wrap(self, stream):
-        for r in izip(stream, count(1)):
+        for r in zip(stream, count(1)):
             self.tokens.append(r)
             yield r
 
 
-class EOF(object):
+class EOF:
     def __str__(self): return "EOF"
     def __repr__(self): return "EOF()"
     def __nonzero__(self): return False
+    def __gt__(self, other): return True
 
 
 EndOfFile = EOF()
 
 
-class BufferWalker(object):
+class BufferWalker:
     """BufferWalker wraps up an iterable and provides an API for infinite lookahead
     but retains laziness. 
     
@@ -130,7 +132,7 @@ class BufferWalker(object):
             diag = DefaultDiagnostics()
         self.source = diag.wrap(iter(source))
         try:
-            self.buffer = [self.source.next()]
+            self.buffer = [self.source.__next__()]
         except StopIteration:
             self.buffer = []
         self.index = 0
@@ -147,7 +149,7 @@ class BufferWalker(object):
         """fills the internal buffer from the source iterator"""
         try:
             for i in range(size):
-                self.buffer.append(self.source.next())
+                self.buffer.append(self.source.__next__())
         except StopIteration:
             self.buffer.append((EndOfFile, EndOfFile))
         self.len = len(self.buffer)
@@ -211,7 +213,7 @@ class BufferWalker(object):
         for parser in parsers:
             try:
                 return parser()
-            except NoMatch, e:
+            except NoMatch as e:
                 if self.depth < start_depth:
                     raise Exception("Picoparse: Internal error")
                 if not failures or e.pos > failures[0].pos:
@@ -238,7 +240,7 @@ def desc(name):
             cur_pos = pos()
             try:
                 return parser(*args, **kwargs)
-            except NoMatch, e:
+            except NoMatch as e:
                 if e.pos == cur_pos:
                     e.expecting = [name]
                 raise
@@ -257,7 +259,7 @@ def p(name, parser, *args1, **kwargs1):
             kwargs.update(kwargs1)
             kwargs.update(kwargs2)
             return parser(*args, **kwargs)
-        except NoMatch, e:
+        except NoMatch as e:
             if e.pos == cur_pos:
                 e.expecting = [name]
             raise
@@ -282,7 +284,7 @@ def run_parser(parser, input, wrapper=None):
     local_ps.value = BufferWalker(input, wrapper)
     try:
         result = parser(), remaining()
-    except NoMatch, e:
+    except NoMatch as e:
         e.message = getattr(local_ps.value.diag, 'generate_error_message', lambda x: None)(e)
         raise
     finally:

@@ -38,7 +38,7 @@ from picoparse import sep, sep1
 from picoparse import cue, follow, seq, string
 from picoparse import not_followed_by, remaining
 
-from utils import ParserTestCase
+from .utils import ParserTestCase
 
 # some simple parsers
 nothing = p(one_of, '')
