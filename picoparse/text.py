@@ -96,6 +96,12 @@ class Pos:
     def __str__(self):
         return str(self.row) + ":" + str(self.col)
 
+    def __gt__(self, other):
+        try:
+            return (self.row, self.col) > (other.row, other.col)
+        except AttributeError:
+            return False
+
 
 class TextDiagnostics:
     def __init__(self):

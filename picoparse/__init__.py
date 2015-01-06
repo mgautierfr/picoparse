@@ -103,7 +103,12 @@ class EOF:
     def __str__(self): return "EOF"
     def __repr__(self): return "EOF()"
     def __nonzero__(self): return False
-    def __gt__(self, other): return True
+    def __gt__(self, other):
+        if type(other) != EOF:
+            return True
+        return False
+    def __lt__(self, other):
+        return False
 
 
 EndOfFile = EOF()
